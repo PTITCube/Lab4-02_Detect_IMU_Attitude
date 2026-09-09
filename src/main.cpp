@@ -1,12 +1,11 @@
 /**
- * VÍ DỤ: PHÁT HIỆN RƠI TỰ DO (FREEFALL DETECTION)
+ * VÍ DỤ 4-2: ĐỌC DỮ LIỆU CẢM BIẾN QUÁN TÍNH 9 TRỤC (IMU 9-DOF)
  * 
  * Mô tả:
- * Khi một vật thể rơi tự do, gia tốc đo được theo tất cả các trục (X, Y, Z) 
- * sẽ tiến gần về 0 (0g). Ví dụ này theo dõi gia tốc trục X từ MPU6050 để 
- * cảnh báo khi vệ tinh hoặc thiết bị đang trong trạng thái không trọng lượng.
- * 
- * Lưu ý: API getAccX() trả về gia tốc theo m/s^2. Trọng lực Trái đất là ~9.81 m/s^2.
+ * Ví dụ này minh họa cách thu thập toàn bộ dữ liệu 9 trục từ cảm biến:
+ * - 3 trục Gia tốc (Accelerometer - MPU6050)
+ * - 3 trục Con quay hồi chuyển (Gyroscope - MPU6050)
+ * - 3 trục La bàn từ trường (Magnetometer - QMC5883L)
  */
 
 #include <Arduino.h>
@@ -14,37 +13,39 @@
 
 PTIT_Sensor mySensor;
 
-// Ngưỡng rơi tự do (gần 0). Giá trị lý tưởng là 0, nhưng do nhiễu nên để ngưỡng nhỏ.
-const float FREEFALL_THRESHOLD = 2.0; // m/s^2
-
 void setup() {
     Serial.begin(115200);
     while (!Serial) { delay(10); }
 
-    Serial.println("\n[EXAMPLE] Bắt đầu bài test Phát hiện Rơi Tự Do...");
+    Serial.println("\n[EXAMPLE] Bắt đầu bài test Cảm biến Quán tính 9 trục (IMU)...");
     mySensor.init();
 }
 
 void loop() {
+    // Phải gọi update() liên tục để lấy giá trị mới nhất
     mySensor.update();
 
-    // Lấy gia tốc trục X
-    float accX = mySensor.getAccX();
-    
-    // Tính giá trị tuyệt đối
-    float absAccX = abs(accX);
-
-    Serial.printf("Gia tốc trục X: %.2f m/s^2", accX);
-
-    if (absAccX < FREEFALL_THRESHOLD) {
-        Serial.println(" ---> [CẢNH BÁO] ĐANG RƠI TỰ DO (FREEFALL DETECTED)!");
+    static unsigned long lastPrint = 0;
+    if (millis() - lastPrint > 1000) {
+        lastPrint = millis();
         
-        // Bạn có thể kích hoạt bung dù (Parachute) tại đây!
-        // VD: Parachute::deploy();
-    } else {
-        Serial.println(" ---> Trạng thái bình thường.");
-    }
+        Serial.println("==================================================");
+        
+        // 1. Dữ liệu Gia tốc (m/s^2) - Đo gia tốc tịnh tiến và trọng lực
+        Serial.println(">>> GIA TỐC (ACCELEROMETER) <<<");
+        Serial.printf("  X: %6.2f m/s^2 | Y: %6.2f m/s^2 | Z: %6.2f m/s^2\n", 
+                      mySensor.getAccX(), mySensor.getAccY(), mySensor.getAccZ());
 
-    // Tốc độ quét nhanh để kịp thời phát hiện rơi
-    delay(100);
+        // 2. Dữ liệu Vận tốc góc (rad/s) - Đo tốc độ xoay quanh các trục
+        Serial.println(">>> CON QUAY HỒI CHUYỂN (GYROSCOPE) <<<");
+        Serial.printf("  X: %6.2f rad/s | Y: %6.2f rad/s | Z: %6.2f rad/s\n", 
+                      mySensor.getGyroX(), mySensor.getGyroY(), mySensor.getGyroZ());
+
+        // 3. Dữ liệu Từ trường (uT) - Đo từ trường Trái đất để xác định hướng (La bàn)
+        Serial.println(">>> LA BÀN TỪ TRƯỜNG (MAGNETOMETER) <<<");
+        Serial.printf("  X: %6.2f uT    | Y: %6.2f uT    | Z: %6.2f uT\n", 
+                      mySensor.getMagX(), mySensor.getMagY(), mySensor.getMagZ());
+        
+        Serial.println("==================================================\n");
+    }
 }
