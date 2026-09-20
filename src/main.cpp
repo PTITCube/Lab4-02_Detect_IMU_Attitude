@@ -18,7 +18,7 @@ void setup() {
     while (!Serial) { delay(10); }
 
     Serial.println("\n[EXAMPLE] Bắt đầu bài test Cảm biến Quán tính 9 trục (IMU)...");
-    mySensor.init();
+    mySensor.init(false, true, true);
 }
 
 void loop() {
