@@ -3,8 +3,8 @@
  * 
  * Mô tả:
  * Ví dụ này minh họa cách thu thập toàn bộ dữ liệu 9 trục từ cảm biến:
- * - 3 trục Gia tốc (Accelerometer - MPU6050)
- * - 3 trục Con quay hồi chuyển (Gyroscope - MPU6050)
+ * - 3 trục Gia tốc (Accelerometer - MPU6050/MPU6500)
+ * - 3 trục Con quay hồi chuyển (Gyroscope - MPU6050/MPU6500)
  * - 3 trục La bàn từ trường (Magnetometer - QMC5883L)
  */
 
