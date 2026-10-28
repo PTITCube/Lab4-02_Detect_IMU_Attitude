@@ -29,22 +29,45 @@ void loop() {
     if (millis() - lastPrint > 1000) {
         lastPrint = millis();
         
+        float ax = mySensor.getAccX();
+        float ay = mySensor.getAccY();
+        float az = mySensor.getAccZ();
+        float gx = mySensor.getGyroX();
+        float gy = mySensor.getGyroY();
+        float gz = mySensor.getGyroZ();
+        float mx = mySensor.getMagX();
+        float my = mySensor.getMagY();
+        float mz = mySensor.getMagZ();
+
+        // Tính Góc nghiêng (Roll & Pitch)
+        float roll = atan2(ay, az) * 180.0 / PI;
+        float pitch = atan2(-ax, sqrt(ay * ay + az * az)) * 180.0 / PI;
+
+        // Tính góc hướng La bàn
+        float heading = atan2(my, mx) * 180.0 / PI;
+        if (heading < 0) heading += 360.0;
+
         Serial.println("==================================================");
         
-        // 1. Dữ liệu Gia tốc (m/s^2) - Đo gia tốc tịnh tiến và trọng lực
+        // 1. Dữ liệu Gia tốc (m/s^2)
         Serial.println(">>> GIA TỐC (ACCELEROMETER) <<<");
         Serial.printf("  X: %6.2f m/s^2 | Y: %6.2f m/s^2 | Z: %6.2f m/s^2\n", 
-                      mySensor.getAccX(), mySensor.getAccY(), mySensor.getAccZ());
+                      ax, ay, az);
 
-        // 2. Dữ liệu Vận tốc góc (rad/s) - Đo tốc độ xoay quanh các trục
+        // 2. Dữ liệu Vận tốc góc (rad/s)
         Serial.println(">>> CON QUAY HỒI CHUYỂN (GYROSCOPE) <<<");
         Serial.printf("  X: %6.2f rad/s | Y: %6.2f rad/s | Z: %6.2f rad/s\n", 
-                      mySensor.getGyroX(), mySensor.getGyroY(), mySensor.getGyroZ());
+                      gx, gy, gz);
 
-        // 3. Dữ liệu Từ trường (uT) - Đo từ trường Trái đất để xác định hướng (La bàn)
+        // 3. Góc nghiêng (Tilt Angle)
+        Serial.println(">>> GÓC NGHIÊNG (TILT ANGLE) <<<");
+        Serial.printf("  Roll (Lắc ngang)  : %6.2f° | Pitch (Chúc/Ngóc) : %6.2f°\n", 
+                      roll, pitch);
+
+        // 4. Dữ liệu Từ trường (uT) & La bàn (Heading)
         Serial.println(">>> LA BÀN TỪ TRƯỜNG (MAGNETOMETER) <<<");
-        Serial.printf("  X: %6.2f uT    | Y: %6.2f uT    | Z: %6.2f uT\n", 
-                      mySensor.getMagX(), mySensor.getMagY(), mySensor.getMagZ());
+        Serial.printf("  X: %6.2f uT    | Y: %6.2f uT    | Z: %6.2f uT    | Heading: %6.2f°\n", 
+                      mx, my, mz, heading);
         
         Serial.println("==================================================\n");
     }
